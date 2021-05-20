@@ -44,23 +44,16 @@ los mismos.
 # Construccion de modelos
 
 def newAnalyzer():
-    """ Inicializa el analizador
-
-   stops: Tabla de hash para guardar los vertices del grafo
-   connections: Grafo para representar las rutas entre estaciones
-   components: Almacena la informacion de los componentes conectados
-   paths: Estructura que almancena los caminos de costo minimo desde un
-           vertice determinado a todos los otros vértices del grafo
-    """
+  
     try:
         analyzer = {
-                    'stops': None,
+                    'land_points': None,
                     'connections': None,
                     'components': None,
                     'paths': None
                     }
 
-        analyzer['stops'] = mp.newMap(numelements=14000,
+        analyzer['land_points'] = mp.newMap(numelements=14000,
                                      maptype='PROBING',
                                      comparefunction=compareStopIds)
 
@@ -74,6 +67,87 @@ def newAnalyzer():
 
 
 # Funciones para agregar informacion al catalogo
+
+def addLandingPoint(analyzer, lastservice, service):
+    """
+    Adiciona las estaciones al grafo como vertices y arcos entre las
+    estaciones adyacentes.
+
+    Los vertices tienen por nombre el identificador de la estacion
+    seguido de la ruta que sirve.  Por ejemplo:
+    """
+    try:
+        origin = formatVertex(lastservice)
+        destination = formatVertex(service)
+        distance = float(service['Distance']) - float(lastservice['Distance'])
+        distance = abs(distance)
+        addStop(analyzer, origin)
+        addStop(analyzer, destination)
+        addConnection(analyzer, origin, destination, distance)
+        addRouteStop(analyzer, service)
+        addRouteStop(analyzer, lastservice)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addLandingPoint')
+
+
+def addStop(analyzer, stopid):
+    """
+    Adiciona una estación como un vertice del grafo
+    """
+    try:
+        if not gr.containsVertex(analyzer['connections'], stopid):
+            gr.insertVertex(analyzer['connections'], stopid)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:addstop')
+
+
+def addRouteStop(analyzer, service):
+    """
+    Agrega a una estacion, una ruta que es servida en ese paradero
+    """
+    entry = mp.get(analyzer['land_points'], service[''])
+    if entry is None:
+        lstroutes = lt.newList(cmpfunction=compareroutes)
+        lt.addLast(lstroutes, service['ServiceNo'])
+        mp.put(analyzer['land_points'], service['BusStopCode'], lstroutes)
+    else:
+        lstroutes = entry['value']
+        info = service['ServiceNo']
+        if not lt.isPresent(lstroutes, info):
+            lt.addLast(lstroutes, info)
+    return analyzer
+
+
+def addRouteConnections(analyzer):
+    """
+    Por cada vertice (cada estacion) se recorre la lista
+    de rutas servidas en dicha estación y se crean
+    arcos entre ellas para representar el cambio de ruta
+    que se puede realizar en una estación.
+    """
+    lststops = mp.keySet(analyzer['land_points'])
+    for key in lt.iterator(lststops):
+        lstroutes = mp.get(analyzer['land_points'], key)['value']
+        prevrout = None
+        for route in lt.iterator(lstroutes):
+            route = key + '-' + route
+            if prevrout is not None:
+                addConnection(analyzer, prevrout, route, 0)
+                addConnection(analyzer, route, prevrout, 0)
+            prevrout = route
+
+
+def addConnection(analyzer, origin, destination, distance):
+    """
+    Adiciona un arco entre dos estaciones
+    """
+    edge = gr.getEdge(analyzer['connections'], origin, destination)
+    if edge is None:
+        gr.addEdge(analyzer['connections'], origin, destination, distance)
+    return analyzer
+
 
 
 # Funciones para creacion de datos
@@ -99,7 +173,7 @@ def totalConnections(analyzer):
 
 def compareStopIds(stop, keyvaluestop):
     """
-    Compara dos estaciones
+    Compara dos landing point
     """
     stopcode = keyvaluestop['key']
     if (stop == stopcode):
@@ -122,4 +196,15 @@ def compareroutes(route1, route2):
         return -1
 
 
-# Funciones de ordenamiento
+# Funciones helper
+
+def formatVertex(service):
+    """
+    Se formatea el nombre del vertice con el id de la estación
+    seguido de la ruta.
+    """
+    name = service['landing_point_id'] + '-'
+    name = name + service['name']
+    return name
+
+

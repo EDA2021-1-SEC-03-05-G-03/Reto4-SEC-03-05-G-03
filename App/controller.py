@@ -57,15 +57,14 @@ def loadServices(analyzer, servicesfile):
     lastservice = None
     for service in input_file:
         if lastservice is not None:
-            sameservice = lastservice['ServiceNo'] == service['ServiceNo']
-            samedirection = lastservice['Direction'] == service['Direction']
-            samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
-            if sameservice and samedirection and not samebusStop:
-                model.addStopConnection(analyzer, lastservice, service)
+            #sameservice = lastservice[''] == service['ServiceNo']
+            samedirection = lastservice['destination'] == service['destination']
+            #samebusStop = lastservice['origin'] == service['origin']
+            if  samedirection:
+                model.addLandingPoint(analyzer, lastservice, service)
         lastservice = service
-    model.addRouteConnections(analyzer)
+    model.addLandingPoint(analyzer)
     return analyzer
-
 
 def loadServices2(analyzer, servicesfile2):
     """
@@ -82,13 +81,13 @@ def loadServices2(analyzer, servicesfile2):
     lastservice = None
     for service in input_file:
         if lastservice is not None:
-            sameservice = lastservice['ServiceNo'] == service['ServiceNo']
-            samedirection = lastservice['Direction'] == service['Direction']
-            samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
-            if sameservice and samedirection and not samebusStop:
-                model.addStopConnection(analyzer, lastservice, service)
+            sameservice = lastservice['CountryName'] == service['CountryName']
+            #samedirection = lastservice['Direction'] == service['Direction']
+            #samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
+            if sameservice:
+                model.addLandingPoint(analyzer, lastservice, service)
         lastservice = service
-    model.addRouteConnections(analyzer)
+    model.addLandingPoint(analyzer)
     return analyzer
 
 
@@ -107,13 +106,13 @@ def loadServices3(analyzer, servicesfile3):
     lastservice = None
     for service in input_file:
         if lastservice is not None:
-            sameservice = lastservice['ServiceNo'] == service['ServiceNo']
-            samedirection = lastservice['Direction'] == service['Direction']
-            samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
-            if sameservice and samedirection and not samebusStop:
-                model.addStopConnection(analyzer, lastservice, service)
+            sameservice = lastservice['landing_point_id'] == service['landing_point_id']
+            #samedirection = lastservice['Direction'] == service['Direction']
+            #samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
+            if sameservice:
+                model.addLandingPoint(analyzer, lastservice, service)
         lastservice = service
-    model.addRouteConnections(analyzer)
+    model.addLandingPoint(analyzer)
     return analyzer
 
 
