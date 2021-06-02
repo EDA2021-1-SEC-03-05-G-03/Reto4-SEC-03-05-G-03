@@ -164,6 +164,21 @@ def lastLoadedCountry(analyzer):
     """
     return analyzer['lastLoadedCountry']
 
+def mostConnectedLandingPoints(analyzer):
+    maxDegreeLandingPoints = []
+    vertices = gr.vertices(analyzer['connections'])
+    maxDegree = 0
+    for vertix in vertices:
+        vertixDegree = gr.degree(analyzer['connections'], vertix)
+        if vertixDegree == maxDegree:
+            maxDegreeLandingPoints.append(vertix)
+        elif vertixDegree > maxDegree:
+            maxDegree = vertixDegree
+            maxDegreeLandingPoints = []
+            maxDegreeLandingPoints.append(vertix)
+    return (maxDegreeLandingPoints, maxDegree)
+        
+
 # Funciones utilizadas para comparar elementos dentro de una lista
 def compareLandingIds(landing, keyvaluelanding):
     """

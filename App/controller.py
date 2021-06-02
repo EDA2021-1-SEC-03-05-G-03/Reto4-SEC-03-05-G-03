@@ -130,3 +130,11 @@ def lastLoadedCountry(analyzer):
     Retorna el ultimo Country cargado
     """
     return model.lastLoadedCountry(analyzer)
+
+def mostConnectedLandingPoints(analyzer):
+    """
+    Retorna una tupla con:
+    Lista de landing points (nombre, país, identificador). [0]
+    Total, de cables conectados a dichos landing points. [1]
+    """
+    return model.mostConnectedLandingPoints(analyzer)

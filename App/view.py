@@ -45,14 +45,14 @@ def printMenu():
     print("\n*******************************************")
     print("Bienvenido")
     print("0- Cargar información en el catálogo")
-    print("1- Identificar los clusteres de informacion     - req1")
-    print("2- Identificar los puntos de conexion criticos  - req2")
-    print("3- Identificar la ruta de menor distancia       - req3")
-    print("4- Identificar la infraestructura critica       - req4")
-    print("5- Analisis de fallas                           - req5")
-    print("6- Los mejores canales para transmitir (Bono)   - req6")
-    print("7- La mejor ruta para comunicarme      (Bono)   - req7")
-    print("8- Graficando los grafos               (Bono)   - req8")
+    print("1- Cantidad de clústeres dentro de la red de cables submarinos y si dos landing points pertenecen o no al mismo clúster. - req1")
+    print("2- Landing point(s) que sirven como punto de interconexión a más cables en la red.  - req2")
+    print("3- Ruta mínima en distancia para enviar información entre dos países - req3")
+    print("4- Infraestructura crítica para poder garantizar el mantenimiento preventivo del mismo - req4")
+    print("5- Impacto que tendría el fallo de un determinado landing point que afecta todos los cables conectados al mismo - req5")
+    print("6- Ancho de banda máximo que se puede garantizar para la transmisión (Bono)   - req6")
+    print("7- Ruta mínima en número de saltos para enviar información entre dos direcciones IP dadas. (Bono)   - req7")
+    print("8- Graficando los grafos (Bono)   - req8")
     print("*******************************************")
 
 catalog = None
@@ -97,8 +97,13 @@ def thread_cycle():
             pass
 
         elif int(inputs[0]) == 2:
-            pass
+            tuplaMostConnected = controller.mostConnectedLandingPoints(cont)
+            arrayLandingPoints = tuplaMostConnected[0]
+            maxDegree = tuplaMostConnected[1]
 
+            for landing in arrayLandingPoints:
+                print('• ' + str(landing['landing_point_id']) + ' - ' + str(landing['id']) + ' - ' + str(landing['name']))
+            print('* Cables conectados: ' + str(maxDegree))
         elif int(inputs[0]) == 3:
             pass
 
