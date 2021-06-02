@@ -72,9 +72,9 @@ def addLandingPointConnection(analyzer, connection):
     """
     try:
         origin = connection['origin']
-        originLandingPoint = {'id': origin}
+        originLandingPoint = {'landing_point_id': origin}
         destination = connection['destination']
-        destinationLandingPoint = {'id': destination}
+        destinationLandingPoint = {'landing_point_id': destination}
         #distance = float(landingPoint['Distance']) - float(lastservice['Distance'])
         #distance = abs(distance)
         distance = 0
@@ -93,8 +93,8 @@ def addLandingPoint(analyzer, landingPoint):
     try:
         if analyzer['firstLandingPoint'] is None:
             analyzer['firstLandingPoint'] = str(landingPoint)
-        if not gr.containsVertex(analyzer['connections'], landingPoint['id']):
-            gr.insertVertex(analyzer['connections'], landingPoint['id'])
+        if not gr.containsVertex(analyzer['connections'], landingPoint['landing_point_id']):
+            gr.insertVertex(analyzer['connections'], landingPoint['landing_point_id'])
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addLandingPoint')
@@ -168,6 +168,7 @@ def mostConnectedLandingPoints(analyzer):
     maxDegreeLandingPoints = []
     vertices = gr.vertices(analyzer['connections'])
     maxDegree = 0
+    print(vertices)
     for vertix in vertices:
         vertixDegree = gr.degree(analyzer['connections'], vertix)
         if vertixDegree == maxDegree:
