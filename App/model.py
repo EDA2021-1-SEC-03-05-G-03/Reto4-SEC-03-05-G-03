@@ -44,6 +44,7 @@ def newAnalyzer():
         analyzer = {
                     'connections': None,
                     'countries': None,
+                    'landing_points': None,
                     'components': None,
                     'firstLandingPoint': None,
                     'lastLoadedCountry': None,
@@ -53,6 +54,10 @@ def newAnalyzer():
         analyzer['countries'] = mp.newMap(numelements=1279,
                                           maptype='PROBING',
                                           comparefunction=compareLandingIds)
+
+        analyzer['landing_points'] = mp.newMap(numelements=1283,
+                                               maptype='PROBING',
+                                               comparefunction=compareLandingIds)
 
         analyzer['connections'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=True,
@@ -71,10 +76,10 @@ def addLandingPointConnection(analyzer, connection):
     Landing Points adyacentes.
     """
     try:
-        origin = connection['origin']
-        originLandingPoint = {'landing_point_id': origin}
-        destination = connection['destination']
-        destinationLandingPoint = {'landing_point_id': destination}
+        origin = int(connection['origin'])
+        originLandingPoint = {'landing_point_id': int(origin)}
+        destination = int(connection['destination'])
+        destinationLandingPoint = {'landing_point_id': int(destination)}
         #distance = float(landingPoint['Distance']) - float(lastservice['Distance'])
         #distance = abs(distance)
         distance = 0
@@ -93,8 +98,8 @@ def addLandingPoint(analyzer, landingPoint):
     try:
         if analyzer['firstLandingPoint'] is None:
             analyzer['firstLandingPoint'] = str(landingPoint)
-        if not gr.containsVertex(analyzer['connections'], landingPoint['landing_point_id']):
-            gr.insertVertex(analyzer['connections'], landingPoint['landing_point_id'])
+        if not gr.containsVertex(analyzer['connections'], int(landingPoint['landing_point_id'])):
+            gr.insertVertex(analyzer['connections'], int(landingPoint['landing_point_id']))
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addLandingPoint')
@@ -114,12 +119,28 @@ def addCountry(analyzer, country):
     """
     entry = mp.get(analyzer['countries'], country['CountryCode'])
     if entry is None:
-        lst = lt.newList(cmpfunction=compareCountries)
+        lst = lt.newList(cmpfunction=compare)
         lt.addLast(lst, country)
         mp.put(analyzer['countries'], country['CountryCode'], lst)
     else:
         lst = entry['value']
         info = country
+        if not lt.isPresent(lst, info):
+            lt.addLast(lst, info)
+    return analyzer
+
+def addLandingPointToMap(analyzer, landingPoint):
+    """
+    Agrega a un LandingPoint a un Map
+    """
+    entry = mp.get(analyzer['landing_points'], int(landingPoint['landing_point_id']))
+    if entry is None:
+        lst = lt.newList(cmpfunction=compare)
+        lt.addLast(lst, landingPoint)
+        mp.put(analyzer['landing_points'], int(landingPoint['landing_point_id']), lst)
+    else:
+        lst = entry['value']
+        info = landingPoint
         if not lt.isPresent(lst, info):
             lt.addLast(lst, info)
     return analyzer
@@ -166,17 +187,38 @@ def lastLoadedCountry(analyzer):
 
 def mostConnectedLandingPoints(analyzer):
     maxDegreeLandingPoints = []
-    vertices = gr.vertices(analyzer['connections'])
+    vertices = []
+
+    graphVertices = gr.vertices(analyzer['connections'])
     maxDegree = 0
-    print(vertices)
+
+    if graphVertices['first'] is not None:
+        firstVertix = graphVertices['first']
+        firstLandingId = int(firstVertix['info'])
+        vertices.append(firstLandingId)
+        next = firstVertix['next']
+        while next is not None:
+            currentVertixId = int(next['info'])
+            vertices.append(currentVertixId)
+            next = next['next']
+    else:
+        return ([], 0)
+
     for vertix in vertices:
         vertixDegree = gr.degree(analyzer['connections'], vertix)
         if vertixDegree == maxDegree:
-            maxDegreeLandingPoints.append(vertix)
+            llaveValorMapaLanding = mp.get(analyzer['landing_points'], vertix)
+            # Mapa retorna Llave/Valor. Sacamos Valor con Value,
+            # Luego, el valor es un diccionario con la llave first
+            # y dentro de esa llave encontramos el Landing con la llave info. 
+            valorLanding = llaveValorMapaLanding['value']['first']['info']
+            maxDegreeLandingPoints.append(valorLanding)
         elif vertixDegree > maxDegree:
             maxDegree = vertixDegree
             maxDegreeLandingPoints = []
-            maxDegreeLandingPoints.append(vertix)
+            llaveValorMapaLanding = mp.get(analyzer['landing_points'], vertix)
+            valorLanding = llaveValorMapaLanding['value']['first']['info']
+            maxDegreeLandingPoints.append(valorLanding)
     return (maxDegreeLandingPoints, maxDegree)
         
 
@@ -193,25 +235,13 @@ def compareLandingIds(landing, keyvaluelanding):
     else:
         return -1
 
-def compareCountries(country, keyvaluecountry):
+def compare(item1, item2):
     """
-    Compara dos landing point
+    Compara dos Countries
     """
-    landingcode = keyvaluecountry['key']
-    if (country == landingcode):
+    if (item1 == item2):
         return 0
-    elif (country > landingcode):
-        return 1
-    else:
-        return -1
-
-def compareCountries(country1, country2):
-    """
-    Compara dos rutas
-    """
-    if (country1 == country2):
-        return 0
-    elif (country1 > country2):
+    elif (item1 > item2):
         return 1
     else:
         return -1

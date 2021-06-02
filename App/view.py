@@ -103,7 +103,7 @@ def thread_cycle():
 
             for landing in arrayLandingPoints:
                 print('• ' + str(landing['landing_point_id']) + ' - ' + str(landing['id']) + ' - ' + str(landing['name']))
-            print('* Cables conectados: ' + str(maxDegree))
+            print('^ Cables conectados: ' + str(maxDegree))
         elif int(inputs[0]) == 3:
             pass
 

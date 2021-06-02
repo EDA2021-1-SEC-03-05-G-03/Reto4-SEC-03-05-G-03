@@ -89,10 +89,13 @@ def loadLandingPoints(analyzer, landingPointsFile):
             sameLandingPoint = lastLandingPoint['landing_point_id'] == landingPoint['landing_point_id']
             if sameLandingPoint == False:
                 model.addLandingPoint(analyzer, landingPoint)
+                model.addLandingPointToMap(analyzer, landingPoint)
         else:
             model.addLandingPoint(analyzer, landingPoint)
+            model.addLandingPointToMap(analyzer, landingPoint)
         lastLandingPoint = landingPoint
     model.addLandingPoint(analyzer, lastLandingPoint)
+    model.addLandingPointToMap(analyzer, lastLandingPoint)
     return analyzer
 
 
