@@ -42,77 +42,57 @@ def init():
 
 # Funciones para la carga de datos
 
-def loadServices(analyzer, servicesfile):
+def loadConnections(analyzer, connectionsFile):
     """
     Carga los datos de los archivos CSV en el modelo.
-    Se crea un arco entre cada par de estaciones que
-    pertenecen al mismo servicio y van en el mismo sentido.
-
-    addRouteConnection crea conexiones entre diferentes rutas
-    servidas en una misma estación.
     """
-    servicesfile = cf.data_dir + servicesfile
-    input_file = csv.DictReader(open(servicesfile, encoding="utf-8"),
+    file = cf.data_dir + connectionsFile
+    input_file = csv.DictReader(open(file, encoding='utf-8-sig'),
                                 delimiter=",")
-    lastservice = None
-    for service in input_file:
-        if lastservice is not None:
-            #sameservice = lastservice[''] == service['ServiceNo']
-            samedirection = lastservice['destination'] == service['destination']
-            #samebusStop = lastservice['origin'] == service['origin']
-            if  samedirection:
-                model.addLandingPoint(analyzer, lastservice, service)
-        lastservice = service
-    model.addLandingPoint(analyzer)
+    for connection in input_file:
+        model.addLandingPointConnection(analyzer, connection)
     return analyzer
 
-def loadServices2(analyzer, servicesfile2):
+def loadCountries(analyzer, countriesFile):
     """
     Carga los datos de los archivos CSV en el modelo.
-    Se crea un arco entre cada par de estaciones que
-    pertenecen al mismo servicio y van en el mismo sentido.
-
-    addRouteConnection crea conexiones entre diferentes rutas
-    servidas en una misma estación.
     """
-    servicesfile2 = cf.data_dir + servicesfile2
-    input_file = csv.DictReader(open(servicesfile2, encoding="utf-8"),
+    file = cf.data_dir + countriesFile
+    input_file = csv.DictReader(open(file, encoding="utf-8"),
                                 delimiter=",")
-    lastservice = None
-    for service in input_file:
-        if lastservice is not None:
-            sameservice = lastservice['CountryName'] == service['CountryName']
+    lastCountry = None
+    for country in input_file:
+        if lastCountry is not None:
+            sameCountry = lastCountry['CountryName'] == country['CountryName']
             #samedirection = lastservice['Direction'] == service['Direction']
             #samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
-            if sameservice:
-                model.addLandingPoint(analyzer, lastservice, service)
-        lastservice = service
-    model.addLandingPoint(analyzer)
+            if sameCountry == False:
+                model.addCountry(analyzer, country)
+        else:
+            model.addCountry(analyzer, country)
+        lastCountry = country
+    model.addCountry(analyzer, lastCountry)
+    model.addLastCountry(analyzer, lastCountry)
     return analyzer
 
 
-def loadServices3(analyzer, servicesfile3):
+def loadLandingPoints(analyzer, landingPointsFile):
     """
     Carga los datos de los archivos CSV en el modelo.
-    Se crea un arco entre cada par de estaciones que
-    pertenecen al mismo servicio y van en el mismo sentido.
-
-    addRouteConnection crea conexiones entre diferentes rutas
-    servidas en una misma estación.
     """
-    servicesfile3 = cf.data_dir + servicesfile3
-    input_file = csv.DictReader(open(servicesfile3, encoding="utf-8"),
+    file = cf.data_dir + landingPointsFile
+    input_file = csv.DictReader(open(file, encoding="utf-8"),
                                 delimiter=",")
-    lastservice = None
-    for service in input_file:
-        if lastservice is not None:
-            sameservice = lastservice['landing_point_id'] == service['landing_point_id']
-            #samedirection = lastservice['Direction'] == service['Direction']
-            #samebusStop = lastservice['BusStopCode'] == service['BusStopCode']
-            if sameservice:
-                model.addLandingPoint(analyzer, lastservice, service)
-        lastservice = service
-    model.addLandingPoint(analyzer)
+    lastLandingPoint = None
+    for landingPoint in input_file:
+        if lastLandingPoint is not None:
+            sameLandingPoint = lastLandingPoint['landing_point_id'] == landingPoint['landing_point_id']
+            if sameLandingPoint == False:
+                model.addLandingPoint(analyzer, landingPoint)
+        else:
+            model.addLandingPoint(analyzer, landingPoint)
+        lastLandingPoint = landingPoint
+    model.addLandingPoint(analyzer, lastLandingPoint)
     return analyzer
 
 
@@ -120,15 +100,33 @@ def loadServices3(analyzer, servicesfile3):
 
 # Funciones de consulta sobre el catálogo
 
-def totalStops(analyzer):
+def totalLandingPoints(analyzer):
     """
-    Total de paradas de autobus
+    Total de Landing Points
     """
-    return model.totalStops(analyzer)
+    return model.totalLandingPoints(analyzer)
 
 
 def totalConnections(analyzer):
     """
-    Total de enlaces entre las paradas
+    Total de Connections
     """
     return model.totalConnections(analyzer)
+
+def totalCountries(analyzer):
+    """
+    Total de Countries
+    """
+    return model.totalCountries(analyzer)
+
+def firstLandingPoint(analyzer):
+    """
+    Retorna el primer Landing_Point cargado
+    """
+    return model.firstLandingPoint(analyzer)
+
+def lastLoadedCountry(analyzer):
+    """
+    Retorna el ultimo Country cargado
+    """
+    return model.lastLoadedCountry(analyzer)

@@ -29,9 +29,9 @@ from DISClib.ADT import stack
 assert cf
 
 
-servicefile = 'connections.csv'
-servicefile2 = 'countries.csv'
-servicefile3 = 'landing_points.csv'
+connectionsFile = 'connections.csv'
+countriesFile = 'countries.csv'
+landingPointsFile = 'landing_points.csv'
 
 
 """
@@ -68,13 +68,29 @@ def thread_cycle():
         if int(inputs[0]) == 0:
             print("Cargando información de los archivos ....")
             cont = controller.init()
-            controller.loadServices(cont, servicefile)
-            controller.loadServices2(cont, servicefile2)
-            controller.loadServices3(cont, servicefile3)
+
+            print("Preparando Carga de Landing Points...")
+            controller.loadLandingPoints(cont, landingPointsFile)
+            print("Landing Points Cargados!")
+
+            print("Preparando Carga de Connections...")
+            controller.loadConnections(cont, connectionsFile)
+            print("Connections Cargados!")
+
+            print("Preparando Carga de Paises...")
+            controller.loadCountries(cont, countriesFile)
+            print("Paises Cargados!")
+
             numedges = controller.totalConnections(cont)
-            numvertex = controller.totalStops(cont)
-            print('Numero de vertices: ' + str(numvertex))
-            print('Numero de arcos: ' + str(numedges))
+            numvertex = controller.totalLandingPoints(cont)
+            numpaises = controller.totalCountries(cont)
+            print('Numero de vertices (Landing Points): ' + str(numvertex))
+            print('Numero de arcos (Connections): ' + str(numedges))
+            print('Numero de Paises Cargados (Countries): ' + str(numpaises))
+
+            print('Primer Landing Point Cargado: ' + str(controller.firstLandingPoint(cont)))
+            print('Ultimo Country Cargado: ' + str(controller.lastLoadedCountry(cont)))
+
             print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
 
         elif int(inputs[0]) == 1:
