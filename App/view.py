@@ -110,8 +110,6 @@ def thread_cycle():
             final = str(input("Ingrese el pais de llegada: "))
             resultado = controller.camino_mas_corto(cont, inicio, final)
             print(resultado)
-            #print(resultado["VertexA"] + "-->" + resultado["VertexB"] + " costo: " + str(resultado["weight"]))
-            
 
         elif int(inputs[0]) == 4:
             pass

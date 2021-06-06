@@ -25,6 +25,8 @@
  """
 
 
+from os import sep
+from typing import List
 import config as cf
 from haversine import haversine
 from DISClib.ADT.graph import gr
@@ -115,7 +117,7 @@ def addLandingPoint(analyzer, landingPoint):
 
 def addConnection(analyzer, origin, destination, distance):
     """
-    Adiciona un arco entre dos estaciones
+    Adiciona un arco entre dos landing points
     """
     edge = gr.getEdge(analyzer['connections'], origin, destination)
     if edge is None:
@@ -228,24 +230,75 @@ def mostConnectedLandingPoints(analyzer):
             valorLanding = llaveValorMapaLanding['value']['first']['info']
             maxDegreeLandingPoints.append(valorLanding)
     return (maxDegreeLandingPoints, maxDegree)
-        
+
+# Se supone que el inicio o final son el nombre de un país.    
 def camino_mas_corto(analyzer, inicio, final):
+    landingInicio = None
+    landingFinal = None
+
+    listaLandingPoints = []
+    landingValueSet = mp.valueSet(analyzer['landing_points']) 
+    
+    if landingValueSet['first'] is not None:
+        firstItem = landingValueSet['first']
+        firstLanding = firstItem['info']['first']['info']
+        listaLandingPoints.append(firstLanding)
+        next = firstItem['next']
+        while next is not None:
+            currentLanding = next['info']['first']['info']
+            listaLandingPoints.append(currentLanding)
+            next = next['next']
+    else:
+        return
+
+    for landing in listaLandingPoints:
+        landingCountryName = landingNameToCountryName(landing['name'])
+        if inicio == landingCountryName:
+            landingInicio = landing
+        elif final == landingCountryName:
+            landingFinal = landing
+    
+    if landingInicio == None or landingFinal == None:
+        print("No se encontro el landing final o de inicio para esas entradas.")
+        return analyzer
+    
+
     #graphVertices = gr.vertices(analyzer["landing_points"])
-    search = djk.Dijkstra(analyzer['countries'], inicio)
-    return search
-    #assert djk.hasPathTo(search, final) is True
-    #path = djk.pathTo(search, final)
-    #print('')
-    #while not stack.isEmpty(path):
-    #    edge = stack.pop(path)
-    #    print(edge)
-    #    print(edge["VertexA"] + "-->" + edge["VertexB"] + " costo: " + str(edge["weight"]))
+    dijkstra = djk.Dijkstra(analyzer['connections'], int(landingInicio['landing_point_id']))
+    path = djk.pathTo(dijkstra, int(landingFinal['landing_point_id']))
+
+    respuesta = "• Path:"
+
+    if path['first'] is not None:
+        firstItem = path['first']
+        firstIntermedio = firstItem['info']
+        print(firstIntermedio)
+        respuesta = respuesta + "\n    - From: " + str(firstIntermedio['vertexA']) + " to " + str(firstIntermedio['vertexB']) + ". Distance(km): " + str(firstIntermedio['weight'])
+        next = firstItem['next']
+        while next is not None:
+            currentIntermedio = next['info']
+            respuesta = respuesta + "\n    - From: " + str(currentIntermedio['vertexA']) + " to " + str(currentIntermedio['vertexB']) + ". Distance(km): " + str(currentIntermedio['weight'])
+            next = next['next']
+    else:
+        return
+
+    # Agregamos la distancia a la respuesta
+    distancia = djk.distTo(dijkstra, int(landingFinal['landing_point_id']))
+    respuesta = respuesta + "\n • Total Distance: " + str(distancia) + "km"
+
+    return respuesta
 
 # Usando libreria externa de Haversine: https://pypi.org/project/haversine/
 def distanciaEntreDosTuplasDeLatLong(tupla1, tupla2):
     return haversine(tupla1, tupla2)
 
-
+def landingNameToCountryName(name):
+    splitName = str.split(name, ", ")
+    splitSize = len(splitName)
+    if splitSize == 1:
+        return splitName
+    else:
+        return splitName[splitSize - 1]
 
 
 
