@@ -26,6 +26,7 @@
 
 
 import config as cf
+from haversine import haversine
 from DISClib.ADT.graph import gr
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
@@ -80,9 +81,17 @@ def addLandingPointConnection(analyzer, connection):
         originLandingPoint = {'landing_point_id': int(origin)}
         destination = int(connection['destination'])
         destinationLandingPoint = {'landing_point_id': int(destination)}
-        #distance = float(landingPoint['Distance']) - float(lastservice['Distance'])
-        #distance = abs(distance)
-        distance = 0
+
+        # Calcular Distancias
+        latitudLandingOrigen = float(mp.get(analyzer['landing_points'], int(origin))['value']['first']['info']['latitude'])
+        longitudLandingOrigen = float(mp.get(analyzer['landing_points'], int(origin))['value']['first']['info']['longitude'])
+        latitudLandingDestino = float(mp.get(analyzer['landing_points'], int(destination))['value']['first']['info']['latitude'])
+        longitudLandingDestino = float(mp.get(analyzer['landing_points'], int(destination))['value']['first']['info']['longitude'])
+
+        latLongOrigen = (latitudLandingOrigen, longitudLandingOrigen)
+        latLongDestino = (latitudLandingDestino, longitudLandingDestino)
+        distance = distanciaEntreDosTuplasDeLatLong(latLongOrigen, latLongDestino)
+
         addLandingPoint(analyzer, originLandingPoint)
         addLandingPoint(analyzer, destinationLandingPoint)
         addConnection(analyzer, origin, destination, distance)
@@ -231,8 +240,10 @@ def camino_mas_corto(analyzer, inicio, final):
     #    edge = stack.pop(path)
     #    print(edge)
     #    print(edge["VertexA"] + "-->" + edge["VertexB"] + " costo: " + str(edge["weight"]))
-    
 
+# Usando libreria externa de Haversine: https://pypi.org/project/haversine/
+def distanciaEntreDosTuplasDeLatLong(tupla1, tupla2):
+    return haversine(tupla1, tupla2)
 
 
 
