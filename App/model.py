@@ -149,7 +149,6 @@ def addLastCountry(analyzer, country):
     analyzer['lastLoadedCountry'] = country
     return analyzer
 
-# Funciones para creacion de datos
 
 
 # Funciones de consulta
@@ -221,8 +220,29 @@ def mostConnectedLandingPoints(analyzer):
             maxDegreeLandingPoints.append(valorLanding)
     return (maxDegreeLandingPoints, maxDegree)
         
+def camino_mas_corto(analyzer, inicio, final):
+    #graphVertices = gr.vertices(analyzer["landing_points"])
+    search = djk.Dijkstra(analyzer['countries'], inicio)
+    return search
+    #assert djk.hasPathTo(search, final) is True
+    #path = djk.pathTo(search, final)
+    #print('')
+    #while not stack.isEmpty(path):
+    #    edge = stack.pop(path)
+    #    print(edge)
+    #    print(edge["VertexA"] + "-->" + edge["VertexB"] + " costo: " + str(edge["weight"]))
+    
+
+
+
+
+
+
+
+
 
 # Funciones utilizadas para comparar elementos dentro de una lista
+
 def compareLandingIds(landing, keyvaluelanding):
     """
     Compara dos landing point

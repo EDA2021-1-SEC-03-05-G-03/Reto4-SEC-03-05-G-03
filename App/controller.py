@@ -141,3 +141,6 @@ def mostConnectedLandingPoints(analyzer):
     Total, de cables conectados a dichos landing points. [1]
     """
     return model.mostConnectedLandingPoints(analyzer)
+
+def camino_mas_corto(analyzer, inicio, final):
+    return model.camino_mas_corto(analyzer, inicio, final)
