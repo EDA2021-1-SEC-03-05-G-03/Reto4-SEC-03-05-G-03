@@ -24,9 +24,6 @@
  * Dario Correal - Version inicial
  """
 
-
-from os import sep
-from typing import List
 import config as cf
 from haversine import haversine
 from DISClib.ADT.graph import gr
@@ -47,6 +44,7 @@ def newAnalyzer():
         analyzer = {
                     'connections': None,
                     'countries': None,
+                    'cables': None,
                     'landing_points': None,
                     'components': None,
                     'firstLandingPoint': None,
@@ -57,6 +55,14 @@ def newAnalyzer():
         analyzer['countries'] = mp.newMap(numelements=1279,
                                           maptype='PROBING',
                                           comparefunction=compareLandingIds)
+
+        analyzer['cables'] = mp.newMap(numelements=3271,
+                                       maptype='PROBING',
+                                       comparefunction=compareLandingIds)
+
+        analyzer['landing_point_cables'] = mp.newMap(numelements=1283,
+                                           maptype='PROBING',
+                                           comparefunction=compareLandingIds)
 
         analyzer['landing_points'] = mp.newMap(numelements=1283,
                                                maptype='PROBING',
@@ -96,6 +102,11 @@ def addLandingPointConnection(analyzer, connection):
 
         addLandingPoint(analyzer, originLandingPoint)
         addLandingPoint(analyzer, destinationLandingPoint)
+
+        addCable(analyzer, connection['cable_id'])
+        addLandingCable(analyzer, int(origin), connection['cable_id'])
+        addLandingCable(analyzer, int(destination), connection['cable_id'])
+
         addConnection(analyzer, origin, destination, distance)
         return analyzer
     except Exception as exp:
@@ -136,6 +147,38 @@ def addCountry(analyzer, country):
     else:
         lst = entry['value']
         info = country
+        if not lt.isPresent(lst, info):
+            lt.addLast(lst, info)
+    return analyzer
+
+def addCable(analyzer, cable):
+    """
+    Agrega a un Cable
+    """
+    entry = mp.get(analyzer['cables'], cable)
+    if entry is None:
+        lst = lt.newList(cmpfunction=compare)
+        lt.addLast(lst, cable)
+        mp.put(analyzer['cables'], cable, lst)
+    else:
+        lst = entry['value']
+        info = cable
+        if not lt.isPresent(lst, info):
+            lt.addLast(lst, info)
+    return analyzer
+
+def addLandingCable(analyzer, landingPointId, cableId):
+    """
+    Agrega a un Cable a la lista de cables de un landing point
+    """
+    entry = mp.get(analyzer['landing_point_cables'], int(landingPointId))
+    if entry is None:
+        lst = lt.newList(cmpfunction=compare)
+        lt.addLast(lst, cableId)
+        mp.put(analyzer['landing_point_cables'], int(landingPointId), lst)
+    else:
+        lst = entry['value']
+        info = cableId
         if not lt.isPresent(lst, info):
             lt.addLast(lst, info)
     return analyzer
@@ -300,10 +343,72 @@ def landingNameToCountryName(name):
     else:
         return splitName[splitSize - 1]
 
+def numeroTotalClusters(analyzer):
+    return mp.size(analyzer['cables'])
 
+def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
+    landingA = None
+    landingB = None
 
+    landingValueSet = mp.valueSet(analyzer['landing_points'])
 
+    if landingValueSet['first'] is not None:
+        firstItem = landingValueSet['first']
+        firstLanding = firstItem['info']['first']['info']
+        if firstLanding['name'] == nombreLandingA:
+            landingA = firstLanding
+        elif firstLanding['name'] == nombreLandingB:
+            landingB = firstLanding
+        next = firstItem['next']
+        while next is not None:
+            currentLanding = next['info']['first']['info']
+            if currentLanding['name'] == nombreLandingA:
+                landingA = currentLanding
+            elif currentLanding['name'] == nombreLandingB:
+                landingB = currentLanding
+            next = next['next']
+    else:
+        return
 
+    if landingA == None or landingB == None:
+        print("No se encontro el landing final o de inicio para esas entradas.")
+        return analyzer
+
+    listaCablesLandingA = []
+    mapValueCablesA = mp.get(analyzer['landing_point_cables'], int(landingA['landing_point_id']))['value']
+    if mapValueCablesA['first'] is not None:
+        firstItem = mapValueCablesA['first']
+        firstCable = firstItem['info']
+        listaCablesLandingA.append(firstCable)
+        next = firstItem['next']
+        while next is not None:
+            currentCable = next['info']
+            listaCablesLandingA.append(currentCable)
+            next = next['next']
+    else:
+        return
+
+    listaCablesLandingB = []
+    mapValueCablesB = mp.get(analyzer['landing_point_cables'], int(landingB['landing_point_id']))['value']
+    if mapValueCablesB['first'] is not None:
+        firstItem = mapValueCablesB['first']
+        firstCable = firstItem['info']
+        listaCablesLandingB.append(firstCable)
+        next = firstItem['next']
+        while next is not None:
+            currentCable = next['info']
+            listaCablesLandingB.append(currentCable)
+            next = next['next']
+    else:
+        return
+
+    compartenCluster = False
+    for cable in listaCablesLandingA:
+        for cableB in listaCablesLandingB:
+            if cable == cableB:
+                print("    - Cluster in common: " + str(cable))
+                compartenCluster = True
+    return compartenCluster
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 

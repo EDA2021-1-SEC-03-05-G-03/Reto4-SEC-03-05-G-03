@@ -94,7 +94,10 @@ def thread_cycle():
             print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
 
         elif int(inputs[0]) == 1:
-            pass
+            inicio = str(input("Ingrese el nombre del landing point 1: "))
+            final = str(input("Ingrese el nombre del landing point 2: "))
+            print("• Total Number of Clusters: " + str(controller.numeroTotalClusters(cont)) + "\n")
+            print("• Mismo Cluster?: " + str(controller.estanEnMismoCluster(cont, inicio, final)))
 
         elif int(inputs[0]) == 2:
             tuplaMostConnected = controller.mostConnectedLandingPoints(cont)

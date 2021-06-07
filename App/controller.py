@@ -144,3 +144,9 @@ def mostConnectedLandingPoints(analyzer):
 
 def camino_mas_corto(analyzer, inicio, final):
     return model.camino_mas_corto(analyzer, inicio, final)
+
+def numeroTotalClusters(analyzer):
+    return model.numeroTotalClusters(analyzer)
+
+def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
+    return model.estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB)
