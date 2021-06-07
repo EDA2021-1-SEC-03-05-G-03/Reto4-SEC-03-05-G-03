@@ -20,14 +20,47 @@
  * along withthis program.  If not, see <http://www.gnu.org/licenses/>.
  """
 
+import time
+import tracemalloc
 import config as cf
 import model
 import csv
-
+from datetime import datetime
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 """
+
+# Funciones para calcular el tiempo
+
+def getTime():
+    """
+    devuelve el instante tiempo de procesamiento en milisegundos
+    """
+    return float(time.perf_counter()*1000)
+
+
+def getMemory():
+    """
+    toma una muestra de la memoria alocada en instante de tiempo
+    """
+    return tracemalloc.take_snapshot()
+
+
+def deltaMemory(start_memory, stop_memory):
+    """
+    calcula la diferencia en memoria alocada del programa entre dos
+    instantes de tiempo y devuelve el resultado en kBytes (ej.: 2100.0 kB)
+    """
+    memory_diff = stop_memory.compare_to(start_memory, "filename")
+    delta_memory = 0.0
+    # suma de las diferencias en uso de memoria
+    for stat in memory_diff:
+        delta_memory = delta_memory + stat.size_diff
+    # de Byte -> kByte
+    delta_memory = delta_memory/1024.0
+    return delta_memory
+
 
 # Inicialización del Catálogo 
 
@@ -75,7 +108,6 @@ def loadCountries(analyzer, countriesFile):
     model.addLastCountry(analyzer, lastCountry)
     return analyzer
 
-
 def loadLandingPoints(analyzer, landingPointsFile):
     """
     Carga los datos de los archivos CSV en el modelo.
@@ -109,7 +141,6 @@ def totalLandingPoints(analyzer):
     """
     return model.totalLandingPoints(analyzer)
 
-
 def totalConnections(analyzer):
     """
     Total de Connections
@@ -134,19 +165,64 @@ def lastLoadedCountry(analyzer):
     """
     return model.lastLoadedCountry(analyzer)
 
+
+
+
+# Req 1
+def numeroTotalClusters(analyzer):
+    return model.numeroTotalClusters(analyzer)
+
+def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
+    return model.estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB)
+
+# Req 2
 def mostConnectedLandingPoints(analyzer):
     """
     Retorna una tupla con:
     Lista de landing points (nombre, país, identificador). [0]
     Total, de cables conectados a dichos landing points. [1]
     """
-    return model.mostConnectedLandingPoints(analyzer)
+    delta_time = -1.0
+    delta_memory = -1.0
 
+    tracemalloc.start()
+    start_time = getTime()
+    start_memory = getMemory()
+
+    datos = model.mostConnectedLandingPoints(analyzer)
+
+    stop_memory = getMemory()
+    stop_time = getTime()
+    tracemalloc.stop()
+
+    delta_time = stop_time - start_time
+    delta_memory = deltaMemory(start_memory, stop_memory)
+
+    return datos, delta_time, delta_memory
+
+# Req 3
 def camino_mas_corto(analyzer, inicio, final):
-    return model.camino_mas_corto(analyzer, inicio, final)
+    delta_time = -1.0
+    delta_memory = -1.0
 
-def numeroTotalClusters(analyzer):
-    return model.numeroTotalClusters(analyzer)
+    tracemalloc.start()
+    start_time = getTime()
+    start_memory = getMemory()
 
-def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
-    return model.estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB)
+    datos = model.camino_mas_corto(analyzer, inicio, final)
+
+    stop_memory = getMemory()
+    stop_time = getTime()
+    tracemalloc.stop()
+
+    delta_time = stop_time - start_time
+    delta_memory = deltaMemory(start_memory, stop_memory)
+
+    return datos, delta_time, delta_memory
+
+# Req 4
+
+
+# Req 5
+def impacto_landingpoint(analyzer, nombre):
+    return model.impacto_landingpoint(analyzer, nombre)

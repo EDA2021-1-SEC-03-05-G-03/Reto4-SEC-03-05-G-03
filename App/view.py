@@ -93,6 +93,8 @@ def thread_cycle():
 
             print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
 
+
+
         elif int(inputs[0]) == 1:
             inicio = str(input("Ingrese el nombre del landing point 1: "))
             final = str(input("Ingrese el nombre del landing point 2: "))
@@ -101,24 +103,33 @@ def thread_cycle():
 
         elif int(inputs[0]) == 2:
             tuplaMostConnected = controller.mostConnectedLandingPoints(cont)
-            arrayLandingPoints = tuplaMostConnected[0]
-            maxDegree = tuplaMostConnected[1]
+            arrayLandingPoints = tuplaMostConnected[0][0]
+            maxDegree = tuplaMostConnected[0][1]
 
             for landing in arrayLandingPoints:
                 print('• ' + str(landing['landing_point_id']) + ' - ' + str(landing['id']) + ' - ' + str(landing['name']))
             print('^ Cables conectados: ' + str(maxDegree))
 
+            print("Tiempo [ms]: ", f"{tuplaMostConnected[1]:.3f}", "  ||  ",
+               "Memoria [kB]: ", f"{tuplaMostConnected[2]:.3f}")
+
         elif int(inputs[0]) == 3:
             inicio = str(input("Ingrese el pais de inicio: "))
             final = str(input("Ingrese el pais de llegada: "))
             resultado = controller.camino_mas_corto(cont, inicio, final)
-            print(resultado)
+            print(resultado[0])
+
+            print("Tiempo [ms]: ", f"{resultado[1]:.3f}", "  ||  ",
+               "Memoria [kB]: ", f"{resultado[2]:.3f}")
 
         elif int(inputs[0]) == 4:
             pass
 
         elif int(inputs[0]) == 5:
-            pass
+            nombre = str(input("Ingrese el nombre del landing point: "))
+            resultado = controller.impacto_landingpoint(cont, nombre)
+            print(resultado)
+
 
         elif int(inputs[0]) == 6:
             pass

@@ -77,6 +77,7 @@ def newAnalyzer():
         error.reraise(exp, 'model:newAnalyzer')
 
 
+
 # Funciones para agregar informacion al catalogo
 
 def addLandingPointConnection(analyzer, connection):
@@ -111,7 +112,6 @@ def addLandingPointConnection(analyzer, connection):
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:addLandingPointConnection')
-
 
 def addLandingPoint(analyzer, landingPoint):
     """
@@ -219,7 +219,6 @@ def totalCountries(analyzer):
     """
     return mp.size(analyzer['countries'])
 
-
 def totalConnections(analyzer):
     """
     Retorna el total arcos del grafo
@@ -238,6 +237,80 @@ def lastLoadedCountry(analyzer):
     """
     return analyzer['lastLoadedCountry']
 
+
+
+# Funciones Requerimientos
+
+# Req1
+def numeroTotalClusters(analyzer):
+    return mp.size(analyzer['cables'])
+
+def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
+    landingA = None
+    landingB = None
+
+    landingValueSet = mp.valueSet(analyzer['landing_points'])
+
+    if landingValueSet['first'] is not None:
+        firstItem = landingValueSet['first']
+        firstLanding = firstItem['info']['first']['info']
+        if firstLanding['name'] == nombreLandingA:
+            landingA = firstLanding
+        elif firstLanding['name'] == nombreLandingB:
+            landingB = firstLanding
+        next = firstItem['next']
+        while next is not None:
+            currentLanding = next['info']['first']['info']
+            if currentLanding['name'] == nombreLandingA:
+                landingA = currentLanding
+            elif currentLanding['name'] == nombreLandingB:
+                landingB = currentLanding
+            next = next['next']
+    else:
+        return
+
+    if landingA == None or landingB == None:
+        print("No se encontro el landing final o de inicio para esas entradas.")
+        return analyzer
+
+    listaCablesLandingA = []
+    mapValueCablesA = mp.get(analyzer['landing_point_cables'], int(landingA['landing_point_id']))['value']
+    if mapValueCablesA['first'] is not None:
+        firstItem = mapValueCablesA['first']
+        firstCable = firstItem['info']
+        listaCablesLandingA.append(firstCable)
+        next = firstItem['next']
+        while next is not None:
+            currentCable = next['info']
+            listaCablesLandingA.append(currentCable)
+            next = next['next']
+    else:
+        return
+
+    listaCablesLandingB = []
+    mapValueCablesB = mp.get(analyzer['landing_point_cables'], int(landingB['landing_point_id']))['value']
+    if mapValueCablesB['first'] is not None:
+        firstItem = mapValueCablesB['first']
+        firstCable = firstItem['info']
+        listaCablesLandingB.append(firstCable)
+        next = firstItem['next']
+        while next is not None:
+            currentCable = next['info']
+            listaCablesLandingB.append(currentCable)
+            next = next['next']
+    else:
+        return
+
+    compartenCluster = False
+    for cable in listaCablesLandingA:
+        for cableB in listaCablesLandingB:
+            if cable == cableB:
+                print("    - Cluster in common: " + str(cable))
+                compartenCluster = True
+    return compartenCluster
+
+
+# Req2
 def mostConnectedLandingPoints(analyzer):
     maxDegreeLandingPoints = []
     vertices = []
@@ -274,6 +347,8 @@ def mostConnectedLandingPoints(analyzer):
             maxDegreeLandingPoints.append(valorLanding)
     return (maxDegreeLandingPoints, maxDegree)
 
+
+# Req 3
 # Se supone que el inicio o final son el nombre de un país.    
 def camino_mas_corto(analyzer, inicio, final):
     landingInicio = None
@@ -343,72 +418,39 @@ def landingNameToCountryName(name):
     else:
         return splitName[splitSize - 1]
 
-def numeroTotalClusters(analyzer):
-    return mp.size(analyzer['cables'])
 
-def estanEnMismoCluster(analyzer, nombreLandingA, nombreLandingB):
-    landingA = None
-    landingB = None
+# Req 4
 
-    landingValueSet = mp.valueSet(analyzer['landing_points'])
 
-    if landingValueSet['first'] is not None:
-        firstItem = landingValueSet['first']
-        firstLanding = firstItem['info']['first']['info']
-        if firstLanding['name'] == nombreLandingA:
-            landingA = firstLanding
-        elif firstLanding['name'] == nombreLandingB:
-            landingB = firstLanding
-        next = firstItem['next']
-        while next is not None:
-            currentLanding = next['info']['first']['info']
-            if currentLanding['name'] == nombreLandingA:
-                landingA = currentLanding
-            elif currentLanding['name'] == nombreLandingB:
-                landingB = currentLanding
-            next = next['next']
-    else:
-        return
 
-    if landingA == None or landingB == None:
-        print("No se encontro el landing final o de inicio para esas entradas.")
-        return analyzer
+# Req 5
+def impacto_landingpoint(analyzer, nombre):
+    mapa = mp.newMap()
+    ids = analyzer['landing_point_id']
+    valores = mp.get(landingValueSet, nombre)
+    valor = me.getValue(valores)
+    puntos = analyzer['landing_points']
+    vertices = mp.get(puntos, valor)
+    valores_vertices = me.getValue(vertices)
+    lista = valores_vertices['cables']
+    for i in range(lt.size(lista)):
+        elementos = lt.getElement(lista, i)
+        arcos = gr.adjacents(analyzer['connections'], elementos)
+        for j in range(lt.size(lista)):
+            elemento_2 = lt.getElement(arcos, i)
+            tupla = elemento_2.replace('<','').replace('>','').split('-')
+            primero = tupla[0]
+            contiene = mp.contains(analyzer['landing_points', primero])
+            if contiene:
+                pais = mp.get(analyzer['landing_points'], primero)
+                valor_pais = me.getValue(pais)
+                pais_final = valor_pais['country']
+                contiene_pais = mp.contains(mapa, pais_final)
+                if not contiene_pais:
+                    mp.put(mapa, pais_final, 0)
+    return mp.keySet(mapa)
 
-    listaCablesLandingA = []
-    mapValueCablesA = mp.get(analyzer['landing_point_cables'], int(landingA['landing_point_id']))['value']
-    if mapValueCablesA['first'] is not None:
-        firstItem = mapValueCablesA['first']
-        firstCable = firstItem['info']
-        listaCablesLandingA.append(firstCable)
-        next = firstItem['next']
-        while next is not None:
-            currentCable = next['info']
-            listaCablesLandingA.append(currentCable)
-            next = next['next']
-    else:
-        return
 
-    listaCablesLandingB = []
-    mapValueCablesB = mp.get(analyzer['landing_point_cables'], int(landingB['landing_point_id']))['value']
-    if mapValueCablesB['first'] is not None:
-        firstItem = mapValueCablesB['first']
-        firstCable = firstItem['info']
-        listaCablesLandingB.append(firstCable)
-        next = firstItem['next']
-        while next is not None:
-            currentCable = next['info']
-            listaCablesLandingB.append(currentCable)
-            next = next['next']
-    else:
-        return
-
-    compartenCluster = False
-    for cable in listaCablesLandingA:
-        for cableB in listaCablesLandingB:
-            if cable == cableB:
-                print("    - Cluster in common: " + str(cable))
-                compartenCluster = True
-    return compartenCluster
 
 # Funciones utilizadas para comparar elementos dentro de una lista
 
