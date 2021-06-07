@@ -75,6 +75,25 @@ def init():
 
 # Funciones para la carga de datos
 
+def cargar_conecciones(analyzer, connectionsFile):
+    delta_time = -1.0
+    delta_memory = -1.0
+
+    tracemalloc.start()
+    start_time = getTime()
+    start_memory = getMemory()
+
+    datos = loadConnections(analyzer, connectionsFile)
+
+    stop_memory = getMemory()
+    stop_time = getTime()
+    tracemalloc.stop()
+
+    delta_time = stop_time - start_time
+    delta_memory = deltaMemory(start_memory, stop_memory)
+
+    return datos, delta_time, delta_memory
+
 def loadConnections(analyzer, connectionsFile):
     """
     Carga los datos de los archivos CSV en el modelo.

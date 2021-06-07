@@ -65,7 +65,7 @@ def thread_cycle():
     while True:
         printMenu()
         inputs = input('Seleccione una opción para continuar\n')
-        if int(inputs[0]) == 0:
+        if int(inputs[0]) == 0:            
             print("Cargando información de los archivos ....")
             cont = controller.init()
 
@@ -74,7 +74,7 @@ def thread_cycle():
             print("Landing Points Cargados!")
 
             print("Preparando Carga de Connections...")
-            controller.loadConnections(cont, connectionsFile)
+            datos = controller.cargar_conecciones(cont, connectionsFile)
             print("Connections Cargados!")
 
             print("Preparando Carga de Paises...")
@@ -92,6 +92,9 @@ def thread_cycle():
             print('Ultimo Country Cargado: ' + str(controller.lastLoadedCountry(cont)))
 
             print('El limite de recursion actual: ' + str(sys.getrecursionlimit()))
+
+            print("Tiempo [ms]: ", f"{datos[1]:.3f}", "  ||  ",
+               "Memoria [kB]: ", f"{datos[2]:.3f}")
 
 
 
